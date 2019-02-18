@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Components.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using GlasSimulator.App.Services;
 
 namespace GlasSimulator.App
 {
@@ -8,8 +7,6 @@ namespace GlasSimulator.App
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            // Example of a data service
-            services.AddSingleton<WeatherForecastService>();
         }
 
         public void Configure(IComponentsApplicationBuilder app)

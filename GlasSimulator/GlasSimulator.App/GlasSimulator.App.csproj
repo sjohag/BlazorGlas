@@ -11,8 +11,4 @@
     <PackageReference Include="Rationals" Version="1.3.3" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Services\" />
-  </ItemGroup>
-
 </Project>

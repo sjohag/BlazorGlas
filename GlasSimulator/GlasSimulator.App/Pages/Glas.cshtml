@@ -1,0 +1,51 @@
+﻿@page "/glas"
+@inherits GlasModel
+<h1>GlasSimulator</h1>
+<div class="jumbotron">
+    <h1>Beskrivning</h1>
+    <p>
+        En modell av glaspyramiden skapas, ner till det sökta glasets position, modellen begränsas till det sökta glasets tillrinningsområde (glas som kan bidra med vatten till det sökta glaset).<br />
+        Varje glas i modellen har referenser till sina 2 (eller 1, i kanterna) överliggande glas, så att inflödet kan hämtas från deras utflöde.<br />
+        Om glaset har en spegelbild (problemet är symetriskt), skapas en referens till spegelglaset (till vänster), vilket kan halvera antalet beräkningar i vissa fall.<br />
+        När modellen är skapad frågar man det sökta glaset efter tidpunkten, rekursivt räknas detta ut (känt inflöde för toppglaset) genom att utifrån inflödet beräkna när glaset är fullt och därefter beräkna utflöden med korrigerade tider, för att begränsa antalet flöden summeras och grupperas flödena.
+    </p>
+</div>
+@if (!string.IsNullOrWhiteSpace(MeddelandeRubrik))
+{
+    <div class="alert alert-danger">
+        <strong>@MeddelandeRubrik</strong><text>&nbsp;</text>@MeddelandeText
+    </div>
+}
+<div class="form-group">
+    <label for="rad">Ange rad</label>
+    <input type="text" class="form-control" id="rad" aria-describedby="radHelp" placeholder="Ange radnummer" bind="@SöktRad" />
+    <small id="radHelp" class="form-text text-muted">Ange det sökta glasets radnummer, 1-100</small>
+</div>
+<div class="form-group">
+    <label for="nummer">Ange nummer</label>
+    <input type="text" class="form-control" id="nummer" aria-describedby="nummerHelp" placeholder="Ange positionsnummer" bind="@SöktNummer" />
+    <small id="nummerHelp" class="form-text text-muted">Ange det sökta glasets positionsnummer, 1-rad</small>
+</div>
+@if (BeräkningPågår)
+{
+    <button class="btn btn-primary" disabled>
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>Beräknar...
+    </button>
+}
+else
+{
+    <button class="btn btn-primary" onclick="@Simulera">
+        Beräkna
+    </button>
+}
+@if (!string.IsNullOrWhiteSpace(ResultatRubrik))
+{
+    <hr />
+    <div class="jumbotron">
+        <h1>@ResultatRubrik</h1>
+        @foreach (var item in ResultatText)
+        {
+            <p>@item</p>
+        }
+    </div>
+}

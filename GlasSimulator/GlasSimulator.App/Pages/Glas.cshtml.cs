@@ -1,0 +1,221 @@
+using Microsoft.AspNetCore.Components;
+using Rationals;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
+
+
+namespace GlasSimulator.App.Pages
+{
+    public class GlasModel : ComponentBase
+    {
+        protected bool BeräkningPågår { get; set; } = false;
+        protected string SöktRad { get; set; }
+        protected string SöktNummer { get; set; }
+        protected string MeddelandeRubrik { get; set; }
+        protected string MeddelandeText { get; set; }
+        protected string ResultatRubrik { get; set; }
+        protected List<string> ResultatText { get; set; }
+        protected async Task Simulera()
+        {
+            MeddelandeRubrik = null;
+            ResultatRubrik = null;
+            BeräkningPågår = true;
+            StateHasChanged();
+            try
+            {
+                if (string.IsNullOrWhiteSpace(SöktRad) || string.IsNullOrWhiteSpace(SöktNummer))
+                    throw new Exception("Ange värden för rad och nummer");
+                var rad = int.Parse(SöktRad);
+                var nummer = int.Parse(SöktNummer);
+                if (!(1 <= rad && rad <= 100))
+                    throw new Exception("Ange rad i intervallet 1-100");
+                if (!(1 <= nummer && nummer <= rad))
+                    throw new Exception("Ange nummer i intervallet 1-rad");
+                ResultatText = await Task.Run(() => KörSimulator(rad, nummer));
+                ResultatRubrik = "Vi har ett resultat!";
+                BeräkningPågår = false;
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                MeddelandeRubrik = "Något blev fel";
+                MeddelandeText = ex.Message;
+                BeräkningPågår = false;
+                StateHasChanged();
+            }
+        }
+        private List<string> KörSimulator(int sökRad, int sökNummer)
+        {
+            var resultat = new List<string>();
+            var tidtagning = Stopwatch.StartNew();
+            var simulator = new GlasSimulator(sökRad, sökNummer);
+            var tid = simulator.SöktGlas.TidpunktGlasetFullt;
+            tidtagning.Stop();
+            resultat.Add($"Tid: {tid:W} (c:a {tid.Presentera()}), glaset {simulator.SöktGlas.Rad}-{simulator.SöktGlas.Nummer} är fullt!");
+            resultat.Add($"Exekveringstid (ms): {tidtagning.ElapsedMilliseconds}");
+            resultat.Add($"Antal glas i modellen: {simulator.AllaGlas.Count}");
+            return resultat;
+        }
+        public class GlasSimulator
+        {
+            public Glas ToppGlas { get; private set; }
+            public Glas SöktGlas { get; private set; }
+            public Dictionary<(int rad, int nummer), Glas> AllaGlas;
+            public GlasSimulator(int sökRad, int sökNummer)
+            {
+                AllaGlas = new Dictionary<(int rad, int nummer), Glas>();
+                for (int rad = 1; rad <= sökRad; rad++)
+                {
+                    var tillrinningsområde = Tillrinningsområde(rad, sökRad, sökNummer);
+                    var nummerFrån = Math.Max(tillrinningsområde.frånNummer, 1);
+                    var nummerTill = Math.Min(tillrinningsområde.tillNummer, rad);
+                    for (int nummer = nummerFrån; nummer <= nummerTill; nummer++)
+                    {
+                        var nyttGlas = new Glas { Rad = rad, Nummer = nummer };
+                        AllaGlas.Add((rad: rad, nummer: nummer), nyttGlas);
+                        //Ovanför till vänster
+                        var vänster = (rad: rad - 1, glas: nummer - 1);
+                        if (AllaGlas.ContainsKey(vänster))
+                        {
+                            nyttGlas.ÖverVänster = AllaGlas[vänster];
+                        }
+                        //Ovanför till höger
+                        var höger = (rad: rad - 1, glas: nummer);
+                        if (AllaGlas.ContainsKey(höger))
+                        {
+                            nyttGlas.ÖverHöger = AllaGlas[höger];
+                        }
+                        //Spegelbild (till vänster)
+                        var spegelbild = (rad: rad, glas: rad - nummer + 1);
+                        if (spegelbild.glas < nummer && AllaGlas.ContainsKey(spegelbild))
+                        {
+                            nyttGlas.Spegelbild = AllaGlas[spegelbild];
+                        }
+                    }
+                }
+                ToppGlas = AllaGlas[(rad: 1, nummer: 1)];
+                SöktGlas = AllaGlas[(rad: sökRad, nummer: sökNummer)];
+            }
+            private (int frånNummer, int tillNummer) Tillrinningsområde(int rad, int sökRad, int sökNummer)
+            {
+                var radskillnad = sökRad - rad;
+                return (frånNummer: sökNummer - radskillnad, tillNummer: sökNummer);
+            }
+            public class Glas
+            {
+                public Glas ÖverVänster { get; set; }
+                public Glas ÖverHöger { get; set; }
+                public Glas Spegelbild { get; set; }
+                public int Rad { get; set; }
+                public int Nummer { get; set; }
+                public Rational Volym { get; set; } = 10;
+                private List<Flöde> inflöden;
+                public List<Flöde> Inflöden
+                {
+                    get
+                    {
+                        if (inflöden != null)
+                            return inflöden;
+                        if (Rad == 1)
+                            inflöden = new List<Flöde> { new Flöde { Start = 0, Värde = 1 } };
+                        else
+                        {
+                            inflöden = new List<Flöde>();
+                            if (ÖverVänster != null)
+                                inflöden.AddRange(ÖverVänster.Utflöden);
+                            if (ÖverHöger != null)
+                                inflöden.AddRange(ÖverHöger.Utflöden);
+                        }
+                        return inflöden;
+                    }
+                }
+                private Rational tidpunktGlasetFullt;
+                public Rational TidpunktGlasetFullt
+                {
+                    get
+                    {
+                        if (tidpunktGlasetFullt > 0)
+                            return tidpunktGlasetFullt;
+                        tidpunktGlasetFullt = Utflöden.Min(u => u.Start);
+                        return tidpunktGlasetFullt;
+                    }
+                }
+                private List<Flöde> utflöden;
+                public List<Flöde> Utflöden
+                {
+                    get
+                    {
+                        if (utflöden != null)
+                            return utflöden;
+                        if (Spegelbild != null)
+                            return Spegelbild.Utflöden;
+                        var inflödenInnanFull = Inflöden;
+                        while (true)
+                        {
+                            var tidFullt = ((Volym + inflödenInnanFull.Sum(i => i.Start * i.Värde)) / inflödenInnanFull.Sum(i => i.Värde)).CanonicalForm;
+                            if (!inflödenInnanFull.Any(i => i.Start > tidFullt))//Giltig lösning, inget flöde medräknat som startar efter tidpunkten
+                            {
+                                tidpunktGlasetFullt = tidFullt;
+                                break;
+                            }
+                            inflödenInnanFull = inflödenInnanFull.Where(i => i.Start < tidFullt).ToList();//Ta bort flöden som startar efter beräknade tidpunkten
+                        }
+                        utflöden = new List<Flöde>();
+                        utflöden.Add(new Flöde { Start = tidpunktGlasetFullt, Värde = (Inflöden.Where(i => i.Start <= tidpunktGlasetFullt).Sum(i => i.Värde) / 2).CanonicalForm });
+                        utflöden.AddRange(from i in Inflöden
+                                          where i.Start > tidpunktGlasetFullt
+                                          group i.Värde by i.Start into ig
+                                          select new Flöde
+                                          {
+                                              Start = ig.Key.CanonicalForm,
+                                              Värde = (ig.Sum() / 2).CanonicalForm
+                                          });
+                        return utflöden;
+                    }
+                }
+            }
+            public class Flöde
+            {
+                public Rational Start { get; set; }
+                public Rational Värde { get; set; }
+            }
+        }
+    }
+    public static class RationalsExtension
+    {
+        public static Rational Sum(this IEnumerable<Rational> rationals)
+        {
+            var resultat = Rational.Zero;
+            foreach (var r in rationals)
+            {
+                resultat = (resultat + r).CanonicalForm;
+            }
+            return resultat;
+        }
+        public static Rational Sum<TSource>(this IEnumerable<TSource> source, Func<TSource, Rational> selector)
+        {
+            return source.Select(selector).Sum();
+        }
+        public static string Presentera(this Rational rational)
+        {
+            try
+            {
+                return $"{((decimal)rational):0.000}";
+            }
+            catch
+            {
+                try
+                {
+                    return $"{((double)rational):0.000}";
+                }
+                catch
+                {
+                    return $"{rational.WholePart}";
+                }
+            }
+        }
+    }
+}

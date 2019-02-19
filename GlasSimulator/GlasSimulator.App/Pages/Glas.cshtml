@@ -29,13 +29,13 @@
 @if (BeräkningPågår)
 {
     <button class="btn btn-primary" disabled>
-        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>Beräknar...
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>Beräknar på servern...
     </button>
 }
 else
 {
     <button class="btn btn-primary" onclick="@Simulera">
-        Beräkna
+        Beräkna på servern
     </button>
 }
 @if (!string.IsNullOrWhiteSpace(ResultatRubrik))

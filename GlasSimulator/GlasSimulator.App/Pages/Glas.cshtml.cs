@@ -1,3 +1,4 @@
+using GlasSimulator.App.Extensions;
 using GlasSimulator.App.Services;
 using Microsoft.AspNetCore.Components;
 using Rationals;
@@ -20,7 +21,7 @@ namespace GlasSimulator.App.Pages
         protected string ResultatRubrik { get; set; }
         protected List<string> ResultatText { get; set; }
         [Inject]
-        private GlasSimulatorFactory glasSimulatorFactory { get; set; }
+        private IGlasSimulatorFactory glasSimulatorFactory { get; set; }
         protected async Task Simulera()
         {
             MeddelandeRubrik = null;
@@ -55,11 +56,11 @@ namespace GlasSimulator.App.Pages
             var resultat = new List<string>();
             var tidtagning = Stopwatch.StartNew();
             var simulator = glasSimulatorFactory.SkapaSimulator(sökRad, sökNummer);
-            var tid = simulator.SöktGlas.TidpunktGlasetFullt;
+            var tid = simulator.TidpuntFullt;
             tidtagning.Stop();
-            resultat.Add($"Tid: {tid:W} (c:a {tid.Presentera()}), glaset {simulator.SöktGlas.Rad}-{simulator.SöktGlas.Nummer} är fullt!");
+            resultat.Add($"Tid: {tid:W} sekunder (c:a {tid.Presentera()} s), glaset {sökRad}-{sökNummer} är fullt!");
             resultat.Add($"Exekveringstid (ms): {tidtagning.ElapsedMilliseconds}");
-            resultat.Add($"Antal glas i modellen: {simulator.AllaGlas.Count}");
+            resultat.Add($"Antal glas i modellen: {simulator.AntalGlasModell}");
             return resultat;
         }
     }

@@ -8,7 +8,7 @@ namespace GlasSimulator.App
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<GlasSimulatorFactory>();
+            services.AddSingleton<IGlasSimulatorFactory, GlasSimulatorFactory>();
         }
 
         public void Configure(IComponentsApplicationBuilder app)

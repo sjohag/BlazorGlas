@@ -3,21 +3,24 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using GlasSimulator.App.Extensions;
 
 namespace GlasSimulator.App.Services
 {
-    public class GlasSimulatorFactory
+    public class GlasSimulatorFactory : IGlasSimulatorFactory
     {
-        public GlasSimulator SkapaSimulator(int sökRad, int sökNummer)
+        public IGlasSimulator SkapaSimulator(int sökRad, int sökNummer)
         {
             return new GlasSimulator(sökRad, sökNummer);
         }
     }
-    public class GlasSimulator
+    public class GlasSimulator : IGlasSimulator
     {
-        public Glas ToppGlas { get; private set; }
-        public Glas SöktGlas { get; private set; }
-        public Dictionary<(int rad, int nummer), Glas> AllaGlas;
+        public Rational TidpuntFullt => SöktGlas.TidpunktGlasetFullt;
+        public int AntalGlasModell => AllaGlas.Count;
+        private Glas ToppGlas { get;  set; }
+        private Glas SöktGlas { get;  set; }
+        private Dictionary<(int rad, int nummer), Glas> AllaGlas;
         public GlasSimulator(int sökRad, int sökNummer)
         {
             AllaGlas = new Dictionary<(int rad, int nummer), Glas>();
@@ -58,7 +61,7 @@ namespace GlasSimulator.App.Services
             var radskillnad = sökRad - rad;
             return (frånNummer: sökNummer - radskillnad, tillNummer: sökNummer);
         }
-        public class Glas
+        private class Glas 
         {
             public Glas ÖverVänster { get; set; }
             public Glas ÖverHöger { get; set; }
@@ -131,45 +134,10 @@ namespace GlasSimulator.App.Services
                 }
             }
         }
-        public class Flöde
+        private class Flöde 
         {
             public Rational Start { get; set; }
             public Rational Värde { get; set; }
         }
     }
-    public static class RationalsExtension
-    {
-        public static Rational Sum(this IEnumerable<Rational> rationals)
-        {
-            var resultat = Rational.Zero;
-            foreach (var r in rationals)
-            {
-                resultat = (resultat + r).CanonicalForm;
-            }
-            return resultat;
-        }
-        public static Rational Sum<TSource>(this IEnumerable<TSource> source, Func<TSource, Rational> selector)
-        {
-            return source.Select(selector).Sum();
-        }
-        public static string Presentera(this Rational rational)
-        {
-            try
-            {
-                return $"{((decimal)rational):0.000}";
-            }
-            catch
-            {
-                try
-                {
-                    return $"{((double)rational):0.000}";
-                }
-                catch
-                {
-                    return $"{rational.WholePart}";
-                }
-            }
-        }
-    }
-
 }

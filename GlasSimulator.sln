@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.28606.126
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlasSimulator.Server", "GlasSimulator\GlasSimulator.Server\GlasSimulator.Server.csproj", "{4C4638B9-D70D-4040-B41A-A52722234381}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GlasSimulator.Server", "GlasSimulator\GlasSimulator.Server\GlasSimulator.Server.csproj", "{4C4638B9-D70D-4040-B41A-A52722234381}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlasSimulator.App", "GlasSimulator\GlasSimulator.App\GlasSimulator.App.csproj", "{208DC408-1541-40B8-A6E6-E80E6FB306AF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GlasSimulator.App", "GlasSimulator\GlasSimulator.App\GlasSimulator.App.csproj", "{208DC408-1541-40B8-A6E6-E80E6FB306AF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlasSimulator.Client", "GlasSimulator.Client\GlasSimulator.Client.csproj", "{A5F6230C-AF6F-4BC5-88AA-88B1B9C15391}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{208DC408-1541-40B8-A6E6-E80E6FB306AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{208DC408-1541-40B8-A6E6-E80E6FB306AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{208DC408-1541-40B8-A6E6-E80E6FB306AF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5F6230C-AF6F-4BC5-88AA-88B1B9C15391}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5F6230C-AF6F-4BC5-88AA-88B1B9C15391}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5F6230C-AF6F-4BC5-88AA-88B1B9C15391}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5F6230C-AF6F-4BC5-88AA-88B1B9C15391}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

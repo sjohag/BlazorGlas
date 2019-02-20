@@ -17,6 +17,6 @@ steps:
 - script: sudo dpkg -i packages-microsoft-prod.deb
 - script: sudo apt-get install apt-transport-https
 - script: sudo apt-get update
-- script: sudo apt-get install dotnet-sdk-3.0
+- script: sudo apt-get install dotnet-sdk-3.0.100-preview-010184
 - script: dotnet build --configuration $(buildConfiguration)
   displayName: 'dotnet build $(buildConfiguration)'
